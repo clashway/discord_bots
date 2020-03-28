@@ -1,0 +1,17 @@
+{
+  "name": "ff_timer_basic",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^12.1.1",
+    "moment": "^2.24.0",
+    "sequelize": "^5.21.5",
+    "sqlite3": "^4.1.1"
+  }
+}
