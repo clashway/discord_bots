@@ -32,13 +32,16 @@ const commandHandler = async (message) => {
   const args = message.content.slice(prefix.length).split(' ');
   const command = args.shift().toLowerCase();
   switch (command) {
+    case 'help':
+      message.reply('!last, !scoreboard, !unluckiest, !killed @killer @victim, !reset');
+      break;
     case 'last':
       const latest = await FriendlyFires.findOne({
         attributes: ['killer', 'victim', 'createdAt'],
         order: [['createdAt', 'DESC']]
       });
 
-      message.reply(`${latest.dataValues.killer} killed ${latest.dataValues.victim} \n ${moment(latest.dataValues.createdAt).fromNow()}`);
+      message.channel.send(`${latest.dataValues.killer} killed ${latest.dataValues.victim} \n ${moment(latest.dataValues.createdAt).fromNow()}`);
       break;
     case 'scoreboard':
       const scoreboard = await FriendlyFires.findAll({
@@ -49,12 +52,26 @@ const commandHandler = async (message) => {
         group: 'killer'
       });
 
-      message.reply(scoreboard.map(record => {
+      message.channel.send(scoreboard.map(record => {
         return `${record.dataValues.killer} -- ${record.dataValues.numberOfKills}`;
       }));
       break;
+    case 'unluckiest':
+      const unlucky = await FriendlyFires.findAll({
+        attributes: [
+          'victim',
+          [Sequelize.fn('COUNT', 'Victim'), 'numberOfKills']
+        ],
+        order: [sequelize.literal('numberOfKills DESC')],
+        group: 'victim'
+      });
+
+      message.channel.send(unlucky.map(record => {
+        return `${record.dataValues.victim} -- ${record.dataValues.numberOfKills}`;
+      }));
+      break;
     case 'killed':
-      if (!args.length) {
+      if (args.length !== 2) {
         message.reply('who did what?');
         return;
       }
@@ -63,7 +80,7 @@ const commandHandler = async (message) => {
 
       try {
         // equivalent to: INSERT INTO tags (name, descrption, username) values (?, ?, ?);
-        const friendlyFire = await FriendlyFires.create({
+        await FriendlyFires.create({
           killer: killer.username,
           victim: victim.username,
         });
@@ -72,6 +89,16 @@ const commandHandler = async (message) => {
         console.log(e);
         return message.reply('Something went wrong with adding a tag.');
       }
+    case 'reset':
+      message.reply('Are you sure?');
+      let filter = msg => msg.author.id == message.author.id && msg.content.toLowerCase() == 'yes';
+      await message.channel.awaitMessages(filter, { max: 1, time: 20000 });
+      FriendlyFires.destroy({
+        where: {},
+        truncate: true
+      });
+      message.reply('Reset the stats.');
+      break;
     default:
       message.reply('dont know that command');
   }
