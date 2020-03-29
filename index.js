@@ -33,7 +33,7 @@ const commandHandler = async (message) => {
   const command = args.shift().toLowerCase();
   switch (command) {
     case 'help':
-      message.reply('!last, !scoreboard, !unluckiest, !killed @killer @victim, !reset');
+      message.reply(`!last \n !scoreboard \n !unluckiest \n !killed @killer @victim \n !reset`);
       break;
     case 'last':
       const latest = await FriendlyFires.findOne({
@@ -89,6 +89,7 @@ const commandHandler = async (message) => {
         console.log(e);
         return message.reply('Something went wrong with adding a tag.');
       }
+      break;
     case 'reset':
       message.reply('Are you sure?');
       let filter = msg => msg.author.id == message.author.id && msg.content.toLowerCase() == 'yes';
