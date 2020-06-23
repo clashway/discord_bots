@@ -90,6 +90,21 @@ const commandHandler = async (message) => {
         return message.reply('Something went wrong with adding a tag.');
       }
       break;
+      case 'undo':
+        return message.reply('Not so fast...');
+
+        try {
+          const latest = await FriendlyFires.findOne({
+            order: [['createdAt', 'DESC']]
+          });
+
+          await latest.destroy();
+          return message.reply(`Removed latest entry.`);
+        } catch (e) {
+          console.log(e);
+          return message.reply('Failed to remove record.');
+        }
+        break;
     case 'reset':
       message.reply('Are you sure?');
       let filter = msg => msg.author.id == message.author.id && msg.content.toLowerCase() == 'yes';
