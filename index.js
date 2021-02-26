@@ -33,7 +33,7 @@ const commandHandler = async (message) => {
   const command = args.shift().toLowerCase();
   switch (command) {
     case 'help':
-      message.reply(`!last \n !scoreboard \n !unluckiest \n !killed @killer @victim \n !reset`);
+      message.reply(`!last \n !scoreboard \n !unluckiest \n !killed @killer @victim \n !whokilled @victim \n !reset`);
       break;
     case 'last':
       const latest = await FriendlyFires.findOne({
@@ -49,6 +49,7 @@ const commandHandler = async (message) => {
           'killer',
           [Sequelize.fn('COUNT', 'Killer'), 'numberOfKills']
         ],
+        order: [sequelize.literal('numberOfKills DESC')],
         group: 'killer'
       });
 
@@ -114,6 +115,24 @@ const commandHandler = async (message) => {
         truncate: true
       });
       message.reply('Reset the stats.');
+      break;
+    case 'whokilled':
+      const whoKillUser = getUserFromMention(args.shift());
+
+      const whoKillResult = await FriendlyFires.findAll({
+        where: {
+          victim: whoKillUser.username
+        },
+        attributes: [
+          'killer',
+          'createdAt'
+        ],
+        order: [sequelize.literal('createdAt DESC')]
+      });
+      message.reply(whoKillResult.map(record => {
+        return `${record.dataValues.killer} on ${moment(record.dataValues.createdAt).format('MM-DD-YYYY')}`;
+      }));
+
       break;
     default:
       message.reply('dont know that command');
